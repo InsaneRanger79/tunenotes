@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuneNotes - Your Digital Music Notebook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5B8C85;
+            --secondary: #F4E8D8;
+            --text: #2C3E50;
+            --light-gray: #ECF0F1;
+            --border: #BDC3C7;
+            --accent: #E8A87C;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, var(--secondary) 0%, #E8DCC8 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        /* Controls */
+        .controls {
+            padding: 25px 30px;
+            background: var(--light-gray);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        select, button, input {
+            padding: 10px 15px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: #4A7570;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--accent);
+        }
+
+        .btn-secondary:hover {
+            background: #D69666;
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            background: white;
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .toggle-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .song-title {
+            text-align: center;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px double var(--border);
+        }
+
+        /* Lyrics Container */
+        .lyrics-container {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .lyric-block {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: var(--secondary);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .lyric-line {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 8px;
+            line-height: 1.8;
+        }
+
+        .notes-line {
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .notes-line input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: inherit;
+            color: inherit;
+            padding: 0;
+        }
+
+        .notes-line input:focus {
+            outline: none;
+        }
+
+        .notes-line.readonly {
+            border: 1px dashed var(--border);
+        }
+
+        /* Student Mode Styles */
+        .student-mode .controls {
+            padding: 15px 30px;
+        }
+
+        .student-mode .control-row {
+            justify-content: center;
+        }
+
+        .student-mode .lyric-block {
+            background: #FAFAFA;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #95A5A6;
+        }
+
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .controls {
+                display: none !important;
+            }
+
+            header {
+                background: white;
+                color: var(--text);
+                border-bottom: 2px solid var(--text);
+            }
+
+            .lyric-block {
+                background: white;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+
+            .notes-line {
+                background: #f9f9f9;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls {
+                padding: 20px 15px;
+            }
+
+            .control-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            select {
+                width: 100%;
+                min-width: 100%;
+            }
+
+            .toggle-group {
+                width: 100%;
+            }
+
+            .toggle-btn {
+                flex: 1;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .song-title {
+                font-size: 1.5rem;
+            }
+
+            .lyric-line {
+                font-size: 1rem;
+            }
+
+            .notes-line {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            header p {
+                font-size: 0.85rem;
+            }
+
+            .song-title {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <header>
+            <h1>🎵 TuneNotes</h1>
+            <p>Your digital music notebook</p>
+        </header>
+
+        <div class="controls" id="controls">
+            <div class="control-row">
+                <label for="songSelect">Select Song:</label>
+                <select id="songSelect">
+                    <option value="">-- Choose a song --</option>
+                    <option value="hotcrossbuns">Hot Cross Buns</option>
+                    <option value="rainrain">Rain Rain Go Away</option>
+                    <option value="marylamb">Mary Had a Little Lamb</option>
+                    <option value="twinkle">Twinkle Twinkle Little Star</option>
+                    <option value="rowboat">Row Row Row Your Boat</option>
+                    <option value="jinglebells">Jingle Bells (Easy version)</option>
+                    <option value="areyousleeping">Are You Sleeping? (Frère Jacques)</option>
+                    <option value="happybirthday">Happy Birthday</option>
+                    <option value="odetojoy">Ode to Joy (Very simplified)</option>
+                    <option value="letitgo">Let It Go (Very Easy Melody / Chorus)</option>
+                </select>
+            </div>
+
+            <div class="control-row">
+                <label>Instrument:</label>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-mode="keyboard">⌨️ Keyboard</button>
+                    <button class="toggle-btn" data-mode="guitar">🎸 Guitar</button>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <label>Mode:</label>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" data-mode="teacher">👨‍🏫 Teacher</button>
+                    <button class="toggle-btn" data-mode="student">🎒 Student</button>
+                </div>
+            </div>
+
+            <div class="control-row" id="teacherControls">
+                <button class="btn-secondary" onclick="exportPDF()">📄 Export as PDF</button>
+                <button onclick="clearData()">🗑️ Clear All Notes</button>
+            </div>
+        </div>
+
+        <div class="content" id="content">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+                    <path d="M21 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+                    <path d="M9 10l12-3"/>
+                </svg>
+                <h3>Welcome to TuneNotes</h3>
+                <p>Select a song above to get started</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Song Database
+        const songs = {
+            hotcrossbuns: {
+                title: "Hot Cross Buns",
+                lyrics: [
+                    "Hot cross buns, hot cross buns",
+                    "One a penny, two a penny",
+                    "Hot cross buns",
+                    "Give 'em to your daughters",
+                    "Give 'em to your sons",
+                    "One a penny two a penny",
+                    "Hot cross buns",
+                    "Hot cross buns, hot cross buns",
+                    "One a penny, two a penny",
+                    "Hot cross buns",
+                    "Hot cross buns, hot cross buns",
+                    "We've got piping hot",
+                    "Hot cross buns",
+                    "Give 'em to your neighbors",
+                    "Friends and family too",
+                    "We've got piping hot",
+                    "Hot cross buns",
+                    "Doo-doo-doo, doo-doo-doo",
+                    "Doo-doo doo doo",
+                    "Hot cross buns, hot cross buns",
+                    "One a penny, two a penny",
+                    "Hot cross buns",
+                    "Give 'em to your daughters",
+                    "Give 'em to your sons",
+                    "One a penny two a penny",
+                    "Hot cross buns",
+                    "Doo-doo-doo doo doo",
+                    "Hot cross buns, hot cross buns",
+                    "One a penny, two a penny",
+                    "Hot cross buns",
+                    "Give 'em to your daughters",
+                    "Give 'em to your sons",
+                    "One a penny two a penny",
+                    "Hot cross buns",
+                    "Doo-doo-doo doo doo"
+                ]
+            },
+            rainrain: {
+                title: "Rain Rain Go Away",
+                lyrics: [
+                    "Rain, rain, go away.",
+                    "Come again another day.",
+                    "Daddy wants to play.",
+                    "Rain, rain, go away.",
+                    "",
+                    "Rain, rain, go away.",
+                    "Come again another day.",
+                    "Mommy wants to play.",
+                    "Rain, rain, go away.",
+                    "",
+                    "Rain, rain, go away.",
+                    "Come again another day.",
+                    "Brother wants to play.",
+                    "Rain, rain, go away.",
+                    "",
+                    "Rain, rain, go away.",
+                    "Come again another day.",
+                    "Sister wants to play.",
+                    "Rain, rain, go away.",
+                    "",
+                    "Rain, rain, go away.",
+                    "Come again another day.",
+                    "Baby wants to play.",
+                    "Rain, rain, go away.",
+                    "",
+                    "Rain, rain, go away.",
+                    "Come again another day.",
+                    "All the family wants to play.",
+                    "Rain, rain, go away."
+                ]
+            },
+            marylamb: {
+                title: "Mary Had a Little Lamb",
+                lyrics: [
+                    "Mary had a little lamb, little lamb, little lamb.",
+                    "Mary had a little lamb whose fleece was white as snow.",
+                    "",
+                    "Everywhere that Mary went, Mary went, Mary went,",
+                    "Everywhere that Mary went, the lamb was sure to go.",
+                    "",
+                    "It followed her to school one day, school one day, school one day.",
+                    "It followed her to school one day which was against the rules.",
+                    "",
+                    "It made the children laugh and play, laugh and play, laugh, and play.",
+                    "It made the children laugh and play to see a lamb at school.",
+                    "",
+                    "Mary's lamb went in the class, in the class, in the class.",
+                    "Mary's lamb went in the class, to take a look.",
+                    "",
+                    "The lamb she sat at Mary's desk, Mary's desk, Mary's desk.",
+                    "The lamb she sat at Mary's desk, to read a book.",
+                    "",
+                    "The teacher came to see the lamb, see the lamb, see the lamb.",
+                    "The teacher came to see the lamb – what a surprise!",
+                    "",
+                    "All the other teachers came, teachers came, teachers came.",
+                    "All the other teachers came to see with their own eyes.",
+                    "",
+                    "\"Yes my little lamb can read, lamb can read, lamb can read.",
+                    "Yes, my little lamb can read, and she can write!\"",
+                    "",
+                    "A pencil then she gave to her, gave to her, gave to her.",
+                    "A pencil then she gave to her – Mary was right!",
+                    "",
+                    "Mary's little lamb can stay, lamb can stay, lamb can stay.",
+                    "Mary's little lamb can stay. The teacher changed the rule!",
+                    "",
+                    "It made the children laugh and play, laugh and play, laugh and play,",
+                    "It made the children laugh and play to see a lamb at school."
+                ]
+            },
+            twinkle: {
+                title: "Twinkle Twinkle Little Star",
+                lyrics: [
+                    "Twinkle twinkle little star.",
+                    "How I wonder what you are.",
+                    "Up above the world so high.",
+                    "Like a diamond in the sky.",
+                    "Twinkle twinkle little star.",
+                    "How I wonder what you are.",
+                    "",
+                    "Twinkle twinkle little star.",
+                    "How I wonder what you are.",
+                    "Up above the world so high.",
+                    "Like a diamond in the sky.",
+                    "Twinkle twinkle little star.",
+                    "How I wonder what you are."
+                ]
+            },
+            rowboat: {
+                title: "Row Row Row Your Boat",
+                lyrics: [
+                    "Row row row your boat.",
+                    "Gently down the stream.",
+                    "Merrily, merrily, merrily, merrily.",
+                    "Life is but a dream.",
+                    "",
+                    "Row row row your boat.",
+                    "Gently down the stream.",
+                    "Merrily, merrily, merrily, merrily.",
+                    "Life is but a dream.",
+                    "",
+                    "Row row row your boat.",
+                    "Gently down the stream.",
+                    "Merrily, merrily, merrily, merrily.",
+                    "Life is but a dream.",
+                    "",
+                    "Row row row your boat.",
+                    "Gently down the stream.",
+                    "Merrily, merrily, merrily, merrily.",
+                    "Life is but a dream.",
+                    "",
+                    "[Canon]",
+                    "Row row row your boat.",
+                    "Gently down the stream.",
+                    "Merrily, merrily, merrily, merrily.",
+                    "Life is but a dream.",
+                    "",
+                    "Life is but a dream."
+                ]
+            },
+            jinglebells: {
+                title: "Jingle Bells (Easy version)",
+                lyrics: [
+                    "Dashing through the snow,",
+                    "in a one-horse open sleigh.",
+                    "O'er the fields we go,",
+                    "laughing all the way.",
+                    "Bells on bobtails ring,",
+                    "making spirits bright.",
+                    "What fun it is to ride and sing",
+                    "a sleighing song tonight.",
+                    "",
+                    "Oh! Jingle bells, jingle bells,",
+                    "jingle all the way.",
+                    "Oh what fun it is to ride",
+                    "in a one-horse open sleigh. Hey!",
+                    "",
+                    "Jingle bells, jingle bells,",
+                    "jingle all the way.",
+                    "Oh what fun it is to ride",
+                    "in a one-horse open sleigh.",
+                    "",
+                    "Dashing through the snow,",
+                    "in a one-horse open sleigh.",
+                    "O'er the fields we go,",
+                    "laughing all the way.",
+                    "Bells on bobtails ring,",
+                    "making spirits bright.",
+                    "What fun it is to ride and sing",
+                    "a sleighing song tonight.",
+                    "",
+                    "Oh! Jingle bells, jingle bells,",
+                    "jingle all the way.",
+                    "Oh what fun it is to ride",
+                    "in a one-horse open sleigh. Hey!",
+                    "",
+                    "Jingle bells, jingle bells,",
+                    "jingle all the way.",
+                    "Oh what fun it is to ride",
+                    "in a one-horse open sleigh.",
+                    "",
+                    "Dashing through the snow,",
+                    "in a one-horse open sleigh.",
+                    "O'er the fields we go,",
+                    "laughing all the way.",
+                    "Bells on bobtails ring,",
+                    "making spirits bright.",
+                    "What fun it is to ride and sing",
+                    "a sleighing song tonight.",
+                    "",
+                    "Oh! Jingle bells, jingle bells,",
+                    "jingle all the way.",
+                    "Oh what fun it is to ride",
+                    "in a one-horse open sleigh. Hey!",
+                    "",
+                    "Jingle bells, jingle bells,",
+                    "jingle all the way.",
+                    "Oh what fun it is to ride",
+                    "in a one-horse open sleigh.",
+                    "In a one-horse open sleigh!"
+                ]
+            },
+            areyousleeping: {
+                title: "Are You Sleeping? (Frère Jacques)",
+                lyrics: [
+                    "Are you sleeping",
+                    "Are you sleeping?",
+                    "Brother John",
+                    "Brother John?",
+                    "Morning bells are ringing",
+                    "Morning bells are ringing",
+                    "Ding ding dong",
+                    "Ding ding dong"
+                ]
+            },
+            happybirthday: {
+                title: "Happy Birthday",
+                lyrics: [
+                    "Happy Birthday to You",
+                    "Happy Birthday to You",
+                    "Happy Birthday Dear (name)",
+                    "Happy Birthday to You."
+                ]
+            },
+            odetojoy: {
+                title: "Ode to Joy (Very simplified)",
+                lyrics: [
+                    "Joyful, joyful, we adore You,",
+                    "God of glory, Lord of love;",
+                    "Hearts unfold like flow'rs before You,",
+                    "Op'ning to the sun above.",
+                    "Melt the clouds of sin and sadness;",
+                    "Drive the dark of doubt away;",
+                    "Giver of immortal gladness,",
+                    "Fill us with the light of day!",
+                    "",
+                    "All Your works with joy surround You,",
+                    "Earth and heav'n reflect Your rays,",
+                    "Stars and angels sing around You,",
+                    "Center of unbroken praise;",
+                    "Field and forest, vale and mountain,",
+                    "Flow'ry meadow, flashing sea,",
+                    "Chanting bird and flowing fountain",
+                    "Praising You eternally",
+                    "",
+                    "Always giving and forgiving,",
+                    "Ever blessing, ever blest,",
+                    "Well-spring of the joy of living,",
+                    "Ocean-depth of happy rest!",
+                    "Loving Father, Christ our Brother,",
+                    "Let Your light upon us shine;",
+                    "Teach us how to love each other,",
+                    "",
+                    "Lift us to the joy divine.",
+                    "Mortals, join the mighty chorus,",
+                    "Which the morning stars began;",
+                    "God's own love is reigning o'er us,",
+                    "Joining people hand in hand.",
+                    "Ever singing, march we onward,",
+                    "Victors in the midst of strife;",
+                    "Joyful music leads us sunward",
+                    "In the triumph song of life."
+                ]
+            },
+            letitgo: {
+                title: "Let It Go (Very Easy Melody / Chorus)",
+                lyrics: [
+                    "The snow glows white on the mountain tonight",
+                    "Not a footprint to be seen",
+                    "A kingdom of isolation",
+                    "And it looks like I'm the queen",
+                    "The wind is howling like this swirling storm inside",
+                    "Couldn't keep it in, Heaven knows I tried",
+                    "",
+                    "Don't let them in, don't let them see",
+                    "Be the good girl you always have to be",
+                    "Conceal, don't feel, don't let them know",
+                    "Well, now they know",
+                    "",
+                    "Let it go, let it go",
+                    "Can't hold it back anymore",
+                    "Let it go, let it go",
+                    "Turn away and slam the door",
+                    "I don't care",
+                    "What they're going to say",
+                    "Let the storm rage on",
+                    "The cold never bothered me anyway",
+                    "",
+                    "It's funny how some distance",
+                    "Makes everything seem small",
+                    "And the fears that once controlled me",
+                    "Can't get to me at all",
+                    "",
+                    "It's time to see what I can do",
+                    "To test the limits and break through",
+                    "No right, no wrong, no rules for me",
+                    "I'm free",
+                    "",
+                    "Let it go, let it go",
+                    "I'm one with the wind and sky",
+                    "Let it go, let it go",
+                    "You'll never see me cry",
+                    "Here I stand",
+                    "And here I'll stay",
+                    "Let the storm rage on",
+                    "",
+                    "My power flurries through the air into the ground",
+                    "My soul is spiraling in frozen fractals all around",
+                    "And one thought crystallizes like an icy blast",
+                    "I'm never goin' back, the past is in the past",
+                    "",
+                    "Let it go, let it go",
+                    "And I'll rise like the break of dawn",
+                    "Let it go, let it go",
+                    "That perfect girl is gone",
+                    "Here I stand",
+                    "In the light of day",
+                    "Let the storm rage on",
+                    "The cold never bothered me anyway"
+                ]
+            }
+        };
+
+        // State
+        let currentSong = null;
+        let currentInstrument = 'keyboard';
+        let currentMode = 'teacher';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Song selection
+            document.getElementById('songSelect').addEventListener('change', (e) => {
+                currentSong = e.target.value;
+                saveState();
+                renderSong();
+            });
+
+            // Instrument toggle
+            document.querySelectorAll('[data-mode="keyboard"], [data-mode="guitar"]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const mode = e.target.dataset.mode;
+                    if (mode === 'keyboard' || mode === 'guitar') {
+                        currentInstrument = mode;
+                        document.querySelectorAll('[data-mode="keyboard"], [data-mode="guitar"]').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        saveState();
+                        renderSong();
+                    }
+                });
+            });
+
+            // Mode toggle
+            document.querySelectorAll('[data-mode="teacher"], [data-mode="student"]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const mode = e.target.dataset.mode;
+                    if (mode === 'teacher' || mode === 'student') {
+                        currentMode = mode;
+                        document.querySelectorAll('[data-mode="teacher"], [data-mode="student"]').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        updateModeUI();
+                        renderSong();
+                    }
+                });
+            });
+        }
+
+        function updateModeUI() {
+            const app = document.getElementById('app');
+            const teacherControls = document.getElementById('teacherControls');
+            
+            if (currentMode === 'student') {
+                app.classList.add('student-mode');
+                teacherControls.style.display = 'none';
+            } else {
+                app.classList.remove('student-mode');
+                teacherControls.style.display = 'flex';
+            }
+        }
+
+        function renderSong() {
+            const content = document.getElementById('content');
+            
+            if (!currentSong || !songs[currentSong]) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+                            <path d="M21 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+                            <path d="M9 10l12-3"/>
+                        </svg>
+                        <h3>Welcome to TuneNotes</h3>
+                        <p>Select a song above to get started</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const song = songs[currentSong];
+            const notes = getNotes();
+            const isReadOnly = currentMode === 'student';
+
+            let html = `<h2 class="song-title">${song.title}</h2><div class="lyrics-container">`;
+
+            song.lyrics.forEach((line, index) => {
+                const noteValue = notes[index] || '';
+                const inputAttr = isReadOnly ? 'readonly' : '';
+                const readonlyClass = isReadOnly ? 'readonly' : '';
+
+                html += `
+                    <div class="lyric-block">
+                        <div class="lyric-line">${line}</div>
+                        <div class="notes-line ${readonlyClass}">
+                            <input 
+                                type="text" 
+                                data-line="${index}" 
+                                value="${noteValue}" 
+                                placeholder="${isReadOnly ? '' : (currentInstrument === 'keyboard' ? 'e.g., C D E F G' : 'e.g., Am G F C')}"
+                                ${inputAttr}
+                            />
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            content.innerHTML = html;
+
+            // Add event listeners to inputs
+            if (!isReadOnly) {
+                document.querySelectorAll('.notes-line input').forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        saveNotes();
+                    });
+                });
+            }
+        }
+
+        function getNotes() {
+            const key = `notes_${currentSong}_${currentInstrument}`;
+            const stored = localStorage.getItem(key);
+            return stored ? JSON.parse(stored) : {};
+        }
+
+        function saveNotes() {
+            const notes = {};
+            document.querySelectorAll('.notes-line input').forEach(input => {
+                const line = input.dataset.line;
+                notes[line] = input.value;
+            });
+            
+            const key = `notes_${currentSong}_${currentInstrument}`;
+            localStorage.setItem(key, JSON.stringify(notes));
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to clear all notes for this song and instrument?')) {
+                const key = `notes_${currentSong}_${currentInstrument}`;
+                localStorage.removeItem(key);
+                renderSong();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('tunenotes_song', currentSong);
+            localStorage.setItem('tunenotes_instrument', currentInstrument);
+        }
+
+        function loadState() {
+            const savedSong = localStorage.getItem('tunenotes_song');
+            const savedInstrument = localStorage.getItem('tunenotes_instrument');
+            
+            if (savedSong && songs[savedSong]) {
+                currentSong = savedSong;
+                document.getElementById('songSelect').value = savedSong;
+            }
+            
+            if (savedInstrument) {
+                currentInstrument = savedInstrument;
+                document.querySelectorAll('[data-mode="keyboard"], [data-mode="guitar"]').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === savedInstrument);
+                });
+            }
+            
+            renderSong();
+        }
+
+        function exportPDF() {
+            const originalMode = currentMode;
+            currentMode = 'student';
+            updateModeUI();
+            renderSong();
+            
+            setTimeout(() => {
+                window.print();
+                
+                setTimeout(() => {
+                    currentMode = originalMode;
+                    updateModeUI();
+                    renderSong();
+                    
+                    document.querySelectorAll('[data-mode="teacher"], [data-mode="student"]').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.mode === currentMode);
+                    });
+                }, 100);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
